@@ -1,0 +1,49 @@
+# Dipakai untuk staging & production dengan nama project berbeda:
+#   docker compose -p laparin-staging    --env-file staging.env    up -d   (APP_PORT=8001)
+#   docker compose -p laparin-production --env-file production.env up -d   (APP_PORT=8000)
+services:
+  app:
+    image: ${IMAGE:?isi IMAGE di .env}:${IMAGE_TAG:-latest}   # dari Docker Hub, bukan build lokal
+    restart: unless-stopped
+    environment:
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_NAME: ${DB_NAME}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      PORT: 3000
+    ports:
+      - "${APP_PORT:-8000}:3000"
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - frontend   # agar port bisa diakses dari host
+      - backend    # untuk bicara ke database
+
+  db:
+    image: mysql:8.0
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: ${DB_NAME}
+      MYSQL_USER: ${DB_USER}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+    volumes:
+      - db_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -p$$MYSQL_ROOT_PASSWORD --silent"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    networks:
+      - backend    # database HANYA di network internal
+
+networks:
+  frontend: {}
+  backend:
+    internal: true
+
+volumes:
+  db_data:

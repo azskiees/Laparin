@@ -1,0 +1,17 @@
+{
+  "name": "laparin",
+  "version": "1.0.0",
+  "description": "Laparin - API pemesanan makanan food court",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "test": "node --test tests/*.test.js",
+    "migrate": "node src/migrate.js",
+    "seed": "node src/seed.js"
+  },
+  "engines": { "node": ">=20" },
+  "dependencies": {
+    "express": "^4.19.2",
+    "mysql2": "^3.11.0"
+  }
+}

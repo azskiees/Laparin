@@ -1,0 +1,53 @@
+CREATE TABLE IF NOT EXISTS tenants (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(100) NOT NULL,
+  description VARCHAR(255) NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS menus (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  tenant_id INT NOT NULL,
+  name VARCHAR(100) NOT NULL,
+  price INT NOT NULL,
+  daily_stock INT NOT NULL DEFAULT 0,
+  CONSTRAINT chk_menu_stock CHECK (daily_stock >= 0),
+  CONSTRAINT fk_menu_tenant FOREIGN KEY (tenant_id) REFERENCES tenants(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS carts (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  tenant_id INT NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_cart_tenant FOREIGN KEY (tenant_id) REFERENCES tenants(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS cart_items (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  cart_id INT NOT NULL,
+  menu_id INT NOT NULL,
+  qty INT NOT NULL,
+  UNIQUE KEY uq_cart_menu (cart_id, menu_id),
+  CONSTRAINT fk_ci_cart FOREIGN KEY (cart_id) REFERENCES carts(id) ON DELETE CASCADE,
+  CONSTRAINT fk_ci_menu FOREIGN KEY (menu_id) REFERENCES menus(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS orders (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  tenant_id INT NOT NULL,
+  customer_name VARCHAR(100) NOT NULL,
+  status VARCHAR(20) NOT NULL DEFAULT 'PENDING',
+  total INT NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_order_tenant FOREIGN KEY (tenant_id) REFERENCES tenants(id)
+);
+
+CREATE TABLE IF NOT EXISTS order_items (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  order_id INT NOT NULL,
+  menu_id INT NOT NULL,
+  name VARCHAR(100) NOT NULL,
+  price INT NOT NULL,
+  qty INT NOT NULL,
+  CONSTRAINT fk_oi_order FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE
+);
