@@ -1,4 +1,5 @@
 const express = require('express');
+const path = require('path');
 const { STATUSES, canTransition } = require('./domain/orderStatus');
 const { calculateTotal } = require('./domain/pricing');
 const { decreaseStock, StockError } = require('./domain/stock');
@@ -12,6 +13,7 @@ const isPosInt = (v) => Number.isInteger(v) && v > 0;
 function createApp({ db }) {
   const app = express();
   app.use(express.json());
+  app.use(express.static(path.join(__dirname, '..', 'public')));
   const wrap = (fn) => (req, res, next) => fn(req, res, next).catch(next);
 
   // ---------- Health ----------
